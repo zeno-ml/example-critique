@@ -3,5 +3,5 @@ functions = "model.py"
 models = ["human"]
 metadata = "wmt20-de-en.tsv"
 data_column = "text"
-label_column = "label"
+label_column = "reference"
 batch_size = 2000
