@@ -1,18 +1,18 @@
 from zeno import distill, model, metric, ZenoOptions
 from inspiredco.critique import Critique
 import os
+from sentence_transformers import SentenceTransformer
 
-# from sentence_transformers import SentenceTransformer
-
-# sentence_embed = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
 client = Critique(api_key=os.environ["INSPIREDCO_API_KEY"])
 
 
 @model
 def pred_fns(name):
+    sentence_embed = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+
     def pred(df, ops):
-        return df["translation"]
-        # , sentence_embed.encode(df[ops.label_column].tolist())
+        embed = sentence_embed.encode(df[ops.data_column].tolist()).tolist()
+        return df["translation"], embed
 
     return pred
 

@@ -1,2 +1,3 @@
-zenoml
+zenoml>=0.3.14
 inspiredco
+sentence_transformers
