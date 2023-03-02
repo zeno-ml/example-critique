@@ -1,6 +1,6 @@
 view = "text-classification"
 functions = "model.py"
-models = ["human"]
+models = ["translation_sources"]
 metadata = "wmt20-de-en.tsv"
 data_column = "text"
 label_column = "reference"
