@@ -1,18 +1,36 @@
-from zeno import distill, model, metric, ZenoOptions
-from inspiredco.critique import Critique
 import os
-from sentence_transformers import SentenceTransformer
+
+import numpy as np
+import pandas as pd
+from inspiredco.critique import Critique
+
+from zeno import ZenoOptions, distill, metric, model
 
 client = Critique(api_key=os.environ["INSPIREDCO_API_KEY"])
 
 
 @model
 def pred_fns(name):
-    sentence_embed = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
-
     def pred(df, ops):
-        embed = sentence_embed.encode(df[ops.data_column].tolist()).tolist()
-        return df["translation"], embed
+        model_df = pd.read_csv(
+            ops.label_path + "/{}.tsv".format(name),
+            sep="\t",
+            quoting=3,
+            keep_default_na=False,
+        )
+        embed_df = pd.read_csv(
+            ops.label_path + "/ref_embed.tsv",
+            sep="\t",
+            keep_default_na=False,
+            quoting=3,
+        )
+        df_join = df[["text"]].merge(
+            model_df[["text", "translation"]], on="text", how="left"
+        )
+        df_join = df_join.merge(embed_df, on="text", how="left")
+        return df_join["translation"].fillna(""), [
+            np.fromstring(d[1:-1], sep=",") for d in df_join["embed"]
+        ]
 
     return pred
 

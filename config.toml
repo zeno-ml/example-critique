@@ -1,7 +1,24 @@
 view = "text-classification"
 functions = "model.py"
-models = ["translation_sources"]
-metadata = "wmt20-de-en.tsv"
+models = [
+	'UEDIN.1066',
+	'Huoshan_Translate.789',
+	'Online-A.1571',
+	'yolo.1052',
+	'zlabs-nlp.1153',
+	'Online-B.1587',
+	'OPPO.1360',
+	'Online-G.1553',
+	'refb',
+	'PROMT_NMT.77',
+	'ref',
+	'Tohoku-AIP-NTT.1442',
+	'Online-Z.1629',
+	'WMTBiomedBaseline.387',
+]
+metadata = "./data/ref_entries.tsv"
+# Use this to get the output TSVs in a different directory
+label_path = "./models/"
 data_column = "text"
 label_column = "reference"
 batch_size = 2000
