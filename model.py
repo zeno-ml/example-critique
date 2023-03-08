@@ -4,7 +4,15 @@ import numpy as np
 import pandas as pd
 from inspiredco.critique import Critique
 
-from zeno import ZenoOptions, distill, metric, model
+from zeno import (
+    DistillReturn,
+    MetricReturn,
+    ModelReturn,
+    ZenoOptions,
+    distill,
+    metric,
+    model,
+)
 
 client = Critique(api_key=os.environ["INSPIREDCO_API_KEY"])
 
@@ -28,9 +36,10 @@ def pred_fns(name):
             model_df[["text", "translation"]], on="text", how="left"
         )
         df_join = df_join.merge(embed_df, on="text", how="left")
-        return df_join["translation"].fillna(""), [
-            np.fromstring(d[1:-1], sep=",") for d in df_join["embed"]
-        ]
+        return ModelReturn(
+            model_output=df_join["translation"].fillna(""),
+            embedding=[np.fromstring(d[1:-1], sep=",") for d in df_join["embed"]],
+        )
 
     return pred
 
@@ -46,7 +55,9 @@ def bert_score(df, ops):
         metric="bert_score", config={"model": "bert-base-uncased"}, dataset=eval_dict
     )
 
-    return [round(r["value"], 6) for r in result["examples"]]
+    return DistillReturn(
+        distill_output=[round(r["value"], 6) for r in result["examples"]]
+    )
 
 
 @distill
@@ -62,7 +73,9 @@ def bleu(df, ops):
         dataset=eval_dict,
     )
 
-    return [round(r["value"], 6) for r in result["examples"]]
+    return DistillReturn(
+        distill_output=[round(r["value"], 6) for r in result["examples"]]
+    )
 
 
 @distill
@@ -78,7 +91,9 @@ def chrf(df, ops):
         dataset=eval_dict,
     )
 
-    return [round(r["value"], 6) for r in result["examples"]]
+    return DistillReturn(
+        distill_output=[round(r["value"], 6) for r in result["examples"]]
+    )
 
 
 @distill
@@ -94,29 +109,47 @@ def length_ratio(df, ops):
         dataset=eval_dict,
     )
 
-    return [round(r["value"], 6) for r in result["examples"]]
+    return DistillReturn(
+        distill_output=[round(r["value"], 6) for r in result["examples"]]
+    )
 
 
 @metric
 def avg_bert_score(df, ops: ZenoOptions):
-    return df[ops.distill_columns["bert_score"]].mean()
+    mean = df[ops.distill_columns["bert_score"]].mean()
+    if pd.notna(mean):
+        return MetricReturn(metric=mean)
+    else:
+        return MetricReturn(metric=0)
 
 
 @metric
 def avg_bleu(df, ops: ZenoOptions):
-    return df[ops.distill_columns["bleu"]].mean()
+    mean = df[ops.distill_columns["bleu"]].mean()
+    if pd.notna(mean):
+        return MetricReturn(metric=mean)
+    else:
+        return MetricReturn(metric=0)
 
 
 @metric
 def avg_chrf(df, ops: ZenoOptions):
-    return df[ops.distill_columns["chrf"]].mean()
+    mean = df[ops.distill_columns["chrf"]].mean()
+    if pd.notna(mean):
+        return MetricReturn(metric=mean)
+    else:
+        return MetricReturn(metric=0)
 
 
 @metric
 def avg_length_ratio(df, ops: ZenoOptions):
-    return df[ops.distill_columns["length_ratio"]].mean()
+    mean = df[ops.distill_columns["length_ratio"]].mean()
+    if pd.notna(mean):
+        return MetricReturn(metric=mean)
+    else:
+        return MetricReturn(metric=0)
 
 
 @distill
 def length(df, ops):
-    return df[ops.data_column].str.len()
+    return DistillReturn(distill_output=df[ops.data_column].str.len())
